@@ -57,7 +57,7 @@
     function sendScoreToTelegram(score) {
       const playerName = prompt("Introduce tu nombre para el ranking:");
 
-      fetch('https://tuservidor.com/save-score', {
+      fetch('http://localhost:3000/save-score', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
