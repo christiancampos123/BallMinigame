@@ -1,23 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catch the Ball</title>
   <style>
-    body { text-align: center; font-family: Arial, sans-serif; }
-    canvas { border: 2px solid black; display: block; margin: 0 auto; }
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+
+    canvas {
+      border: 2px solid black;
+      display: block;
+      margin: 0 auto;
+    }
   </style>
 </head>
+
 <body>
   <h1>Catch the Ball!</h1>
   <canvas id="gameCanvas" width="400" height="400"></canvas>
   <p>Score: <span id="score">0</span></p>
+  <p>Time left: <span id="timeLeft">20</span> seconds</p> <!-- Contador de tiempo -->
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     let score = 0;
+    let timeLeft = 20; // Tiempo límite en segundos
 
     // Ball properties
     let ball = { x: 50, y: 50, radius: 20, dx: 4, dy: 3 };
@@ -30,6 +42,38 @@
       ctx.fillStyle = "#0095DD";
       ctx.fill();
       ctx.closePath();
+    }
+
+    // Supongamos que esta función se llama cuando el juego termina y se tiene la puntuación final
+    function gameOver(score) {
+      console.log('Juego terminado. Puntuación final:', score);
+      alert("¡Tiempo terminado! Tu puntuación final es: " + score);
+
+      // Enviar la puntuación al servidor de Telegram
+      sendScoreToTelegram(score);
+    }
+
+    // Función para enviar la puntuación al servidor del bot de Telegram
+    function sendScoreToTelegram(score) {
+      const playerName = prompt("Introduce tu nombre para el ranking:");
+
+      fetch('https://tuservidor.com/save-score', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: playerName,  // nombre del jugador ingresado
+          score: score           // puntuación final del juego
+        }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Puntuación enviada con éxito:', data);
+        })
+        .catch((error) => {
+          console.error('Error al enviar la puntuación:', error);
+        });
     }
 
     // Update the ball's position
@@ -50,7 +94,7 @@
     }
 
     // Detect click on the ball
-    canvas.addEventListener("click", function(event) {
+    canvas.addEventListener("click", function (event) {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;
@@ -66,7 +110,26 @@
       }
     });
 
+    // Función para contar el tiempo restante
+    function countdown() {
+      const timeDisplay = document.getElementById("timeLeft");
+
+      const timer = setInterval(() => {
+        timeLeft--;
+        timeDisplay.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          gameOver(score);  // Fin del juego cuando el tiempo llega a 0
+        }
+      }, 1000);  // Decrementa el tiempo cada segundo
+    }
+
+    // Inicia el juego y el contador de tiempo
+    countdown();
     gameLoop();  // Start the game loop
+
   </script>
 </body>
+
 </html>
